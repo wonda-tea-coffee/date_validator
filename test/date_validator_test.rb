@@ -11,7 +11,7 @@ module ActiveModel
 
       it "checks validity of the arguments" do
         [3, "foo", 1..6].each do |wrong_argument|
-          proc {
+          expect {
             TestRecord.validates(:expiration_date, date: { before: wrong_argument })
           }.must_raise(ArgumentError, ":before must be a time, a date, a time_with_zone, a symbol or a proc")
         end
@@ -23,15 +23,15 @@ module ActiveModel
                              date: { before: Time.now }
 
         model = TestRecord.new(nil)
-        model.valid?.must_equal false
-        model.errors[:expiration_date].must_equal(["is not a date"])
+        expect(model.valid?).must_equal false
+        expect(model.errors[:expiration_date]).must_equal(["is not a date"])
       end
 
       it "works with helper methods" do
         time = Time.now
         TestRecord.validates_date_of :expiration_date, before: time
         model = TestRecord.new(time + 20000)
-        model.valid?.must_equal false
+        expect(model.valid?).must_equal false
       end
 
       [:valid,:invalid].each do |must_be|
@@ -54,7 +54,7 @@ module ActiveModel
                                      date: {:"#{check}" => now}
 
                 model = TestRecord.new(model_date)
-                must_be == :valid ? model.valid?.must_equal(true) : model.valid?.must_equal(false)
+                must_be == :valid ? expect(model.valid?).must_equal(true) : expect(model.valid?).must_equal(false)
               end
 
               if _context == 'when value does not match validation requirements'
@@ -63,8 +63,8 @@ module ActiveModel
                                        date: {:"#{check}" => now}
 
                   model = TestRecord.new(model_date)
-                  model.valid?.must_equal false
-                  model.errors[:expiration_date].must_equal(["must be " + check.to_s.gsub('_',' ') + " #{I18n.localize(now)}"])
+                  expect(model.valid?).must_equal false
+                  expect(model.errors[:expiration_date]).must_equal(["must be " + check.to_s.gsub('_',' ') + " #{I18n.localize(now)}"])
                 end
               end
           end
@@ -78,8 +78,8 @@ module ActiveModel
                                            message: 'must be after Christmas' }
 
               model = TestRecord.new(now + 21000)
-              model.valid?.must_equal false
-              model.errors[:expiration_date].must_equal(["must be after Christmas"])
+              expect(model.valid?).must_equal false
+              expect(model.errors[:expiration_date]).must_equal(["must be after Christmas"])
             end
 
             it "allows custom validation message to be handled by I18n" do
@@ -91,8 +91,8 @@ module ActiveModel
               TestRecord.validates :expiration_date, date: true
 
               model = TestRecord.new(nil)
-              model.valid?.must_equal false
-              model.errors[:expiration_date].must_equal([custom_message])
+              expect(model.valid?).must_equal false
+              expect(model.errors[:expiration_date]).must_equal([custom_message])
             end
           end
 
@@ -107,15 +107,15 @@ module ActiveModel
         it "accepts a #{type} as an argument to a check" do
           case type
             when :proc then
-              TestRecord.validates(:expiration_date, date: { after: Proc.new {Time.now + 21000} }).must_be_kind_of Hash
+              expect(TestRecord.validates(:expiration_date, date: { after: Proc.new {Time.now + 21000} })).must_be_kind_of Hash
             when :symbol then
               TestRecord.send(:define_method, :min_date, lambda { Time.now + 21000 })
-              TestRecord.validates(:expiration_date, date: { after: :min_date }).must_be_kind_of Hash
+              expect(TestRecord.validates(:expiration_date, date: { after: :min_date })).must_be_kind_of Hash
             when :date then
-              TestRecord.validates(:expiration_date, date: { after: Time.now.to_date }).must_be_kind_of Hash
+              expect(TestRecord.validates(:expiration_date, date: { after: Time.now.to_date })).must_be_kind_of Hash
             when :time_with_zone then
               Time.zone = "Hawaii"
-              TestRecord.validates(:expiration_date, date: { before: Time.zone.parse((Time.now + 21000).to_s, Time.now) }).must_be_kind_of Hash
+              expect(TestRecord.validates(:expiration_date, date: { before: Time.zone.parse((Time.now + 21000).to_s, Time.now) })).must_be_kind_of Hash
           end
         end
       end
@@ -124,7 +124,7 @@ module ActiveModel
         TestRecord.validates :expiration_date,
                              date: { after: Proc.new { nil } }
 
-        TestRecord.new(Time.now).valid?.must_equal false
+        expect(TestRecord.new(Time.now).valid?).must_equal false
       end
 
       it "gracefully handles an unexpected result from a symbol argument evaluation" do
@@ -132,7 +132,7 @@ module ActiveModel
         TestRecord.validates :expiration_date,
                              date: { after: :min_date }
 
-        TestRecord.new(Time.now).valid?.must_equal false
+        expect(TestRecord.new(Time.now).valid?).must_equal false
       end
 
       describe "with type cast attributes" do
@@ -142,19 +142,19 @@ module ActiveModel
 
         it "should detect invalid date expressions when nil is allowed" do
           TestRecord.validates(:expiration_date, date: true, allow_nil: true)
-          TestRecord.new(nil).valid?.must_equal false
+          expect(TestRecord.new(nil).valid?).must_equal false
         end
 
         it "should detect invalid date expressions when blank is allowed" do
           TestRecord.validates(:expiration_date, date: true, allow_blank: true)
-          TestRecord.new(nil).valid?.must_equal false
+          expect(TestRecord.new(nil).valid?).must_equal false
         end
       end
 
       describe 'with garbage input' do
         it 'is invalid' do
           TestRecord.validates(:expiration_date, date: true, allow_nil: true)
-          TestRecord.new('not a date').valid?.must_equal false
+          expect(TestRecord.new('not a date').valid?).must_equal false
         end
       end
     end
