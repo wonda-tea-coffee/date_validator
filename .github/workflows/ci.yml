@@ -19,9 +19,9 @@ jobs:
       matrix:
         include:
           - ruby-version: '3.2'
-            activemodel-version: '6.1'
-          - ruby-version: '3.2'
             activemodel-version: '7.0'
+          - ruby-version: '3.2'
+            activemodel-version: '7.1'
           - ruby-version: '3.3'
             activemodel-version: '7.1'
       fail-fast: true
